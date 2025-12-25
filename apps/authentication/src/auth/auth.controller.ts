@@ -11,12 +11,12 @@ export class AuthController {
     constructor(private readonly authService: AuthService){}
 
     @MessagePattern('get_users')
-    getUsers(): Promise<UserResponseDto[]> {
+    public getUsers(): Promise<UserResponseDto[]> {
         return this.authService.getAllUsers();
     }
 
     @MessagePattern('register_user')
-    registerUser(createUserDto: CreateUserDto): Promise<GenericResponseDto> {
+    public registerUser(createUserDto: CreateUserDto): Promise<GenericResponseDto> {
         return this.authService.registerUser(createUserDto);
     }
 }

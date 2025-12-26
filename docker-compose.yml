@@ -1,0 +1,19 @@
+services:
+  gateway:
+    image: gateway
+    build:
+      context: .
+      dockerfile: apps/gateway/Dockerfile.gateway
+    ports:
+      - "${GATEWAY_PORT:-3000}:3000"
+    depends_on:
+      - authentication
+    environment:
+      AUTH_HOST: authentication
+      AUTH_PORT: ${AUTH_PORT:-4001}
+
+  authentication:
+    image: authentication
+    build:
+      context: .
+      dockerfile: apps/authentication/Dockerfile.authentication     

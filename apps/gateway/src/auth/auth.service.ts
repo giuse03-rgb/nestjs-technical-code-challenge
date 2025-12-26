@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 
@@ -15,6 +15,18 @@ export class AuthService {
     }
 
     public registerUser(createUserDto: CreateUserDto): Promise<GenericResponseDto> {
-        return firstValueFrom(this.client.send<GenericResponseDto>('register_user', createUserDto));
+       return firstValueFrom(this.client.send<GenericResponseDto>('register_user', createUserDto)).catch((error: any) =>{
+        if(error?.statusCode && error.statusCode === 409){
+            throw new ConflictException({
+                success: false,
+                message: "Duplicated mail or username"
+            });
+        }
+
+        throw new InternalServerErrorException({
+            success: false,
+            message: 'Internal server error',
+        });
+       });
     }
 }

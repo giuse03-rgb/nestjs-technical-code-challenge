@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
+import { RpcException } from '@nestjs/microservices';
 
 import { User } from './schemas/user.schema';
 import { CreateUserDto } from '@common/create-user.dto';
@@ -24,11 +25,21 @@ export class AuthService {
 
     public async registerUser(createUserDto: CreateUserDto): Promise<GenericResponseDto> {
         createUserDto.password = await this.hashPassword(createUserDto.password);
-        await this.userModel.create(createUserDto);
-        return {
-            success: true,
-            message: "User registered successfully"
-        }
+        try{
+            await this.userModel.create(createUserDto);
+            return {
+                success: true,
+                message: "User registered successfully"
+            }
+        }catch(error: any){
+            if(error?.code && error.code === 11000){
+                throw new RpcException({
+                    statusCode: 409
+                });
+            }
+
+            throw error;
+        }   
     }
 
     private hashPassword(password: string): Promise<string>{
